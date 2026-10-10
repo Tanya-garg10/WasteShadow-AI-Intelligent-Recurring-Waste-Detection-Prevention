@@ -4,8 +4,6 @@
 
 WasteShadow AI is an AI-first civic-tech intelligence SaaS designed to solve the chronic garbage recurrence trap across Indian municipalities.
 
----
-
 ## 1. Problem Statement & The Recurrence Trap
 
 Ordinary grievance apps dispatch sweepers or compactors to clean blackspots, only for waste to reappear at the exact same coordinates within 36–72 hours.
@@ -19,13 +17,11 @@ WasteShadow AI analyzes dated incident photos, spatial records, and collection s
 3. Formulate **Evidence-Linked Root-Cause Hypotheses** with explicit uncertainty ratings.
 4. Drive **Actionable Civic Work Orders** verified through ground-truth photographic audits.
 
----
-
 ## 2. System Architecture & Tech Stack
 
 ```
  ┌─────────────────────────────────────────────────────────────┐
- │                WasteShadow AI Client (React 19)              │
+ │            WasteShadow AI Client (React 19)                 │
  │  • Tailwind CSS v4       • Leaflet + OpenStreetMap          │
  │  • Lucide Icons          • Spatiotemporal Clustering        │
  └──────────────┬──────────────────────────────┬───────────────┘
@@ -51,8 +47,6 @@ WasteShadow AI analyzes dated incident photos, spatial records, and collection s
 - **Backend:** Python 3.11 + FastAPI + Uvicorn + SQLAlchemy + Pydantic v2
 - **Database:** PostgreSQL / Supabase with spatial indexing and Row Level Security
 - **Deployment:** Render (Backend), Vercel (Frontend), Docker (Full-stack container)
-
----
 
 ## 3. Directory Structure
 
@@ -99,8 +93,6 @@ WasteShadow AI analyzes dated incident photos, spatial records, and collection s
 └── README.md                       # Complete documentation
 ```
 
----
-
 ## 4. Algorithmic Recurrence Scoring Logic
 
 Unlike ordinary tools that misclassify incidents based on superficial visual similarity, WasteShadow AI computes an objective recurrence score ($R_{score} \in [0, 100]$):
@@ -117,15 +109,11 @@ $$R_{score} = w_1 \cdot F + w_2 \cdot C_{int} + w_3 \cdot P_{cat} + w_4 \cdot \t
 - **Emerging:** 2 incidents within 30 days.
 - **Repeated (Chronic):** $\ge 3$ incidents or average recurrence cadence $\le 14$ days.
 
----
-
 ## 5. Seeded Demo Scenarios (Bengaluru Urban Wards)
 
 - **Location A (Indiranagar 12th Main Road, Ward 84):** One-time post-festival dry packaging overflow. Promptly swept and verified clean with ground-truth after photos. Recurrence score: **18/100**.
 - **Location B (KR Flower & Vegetable Market, Ward 109):** Chronic recurring accumulation of perishable produce crates. Reappears within 48h after cleanup due to a 3.5h mismatch between vendor offloading (04:00 AM) and compactor arrival (08:30 AM). Recurrence score: **89/100**.
 - **Location C (Koramangala 80ft Road Culvert, Ward 151):** High-hazard chronic hotspot where single-use plastics choke 85% of the primary stormwater drain aperture, posing an imminent flood threat. Recurrence score: **95/100**.
-
----
 
 ## 6. Running Locally
 
@@ -161,8 +149,6 @@ uvicorn main:app --reload --port 8000
 # Running on http://localhost:8000 (Docs at /docs)
 ```
 
----
-
 ## 7. Deployment Instructions
 
 ### A. Vercel (Frontend)
@@ -178,8 +164,6 @@ uvicorn main:app --reload --port 8000
 3. Build Command: `pip install -r requirements.txt`.
 4. Start Command: `sh -c "python seed_data.py && uvicorn main:app --host 0.0.0.0 --port $PORT"`.
 5. Set Environment Variables: `GEMINI_API_KEY`, `DATABASE_URL`.
-
----
 
 ## 8. Ethical AI & Civic Methodology Notice
 
