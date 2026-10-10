@@ -1,0 +1,6 @@
+{
+  "name": "WasteShadow AI",
+  "description": "Intelligent Recurring Waste Detection & Prevention platform analyzing hotspot recurrence, drain blockage risks, and evidence-linked root causes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
