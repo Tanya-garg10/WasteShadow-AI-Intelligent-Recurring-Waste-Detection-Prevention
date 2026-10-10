@@ -571,5 +571,6 @@ export const HotspotWorkspace: React.FC<HotspotWorkspaceProps> = ({
         </div>
       )}
     </div>
+  </div>
   );
 };

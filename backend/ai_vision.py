@@ -10,17 +10,22 @@ def analyze_photo_with_vision(
     category_hint: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Performs AI Vision Analysis using Gemini 3.8 Flash, or transparent demo fallback.
+    Performs AI Vision Analysis using Featherless API (OpenAI-compatible),
+    or transparent demo fallback if no API key is set.
     """
-    api_key = os.getenv("GEMINI_API_KEY")
+    api_key = os.getenv("FEATHERLESS_API_KEY")
 
-    if api_key and api_key != "MY_GEMINI_API_KEY" and len(api_key) > 10:
+    if api_key and api_key != "YOUR_FEATHERLESS_API_KEY" and len(api_key) > 10:
         try:
-            from google import genai
-            client = genai.Client(api_key=api_key)
+            from openai import OpenAI
 
+            client = OpenAI(
+                api_key=api_key,
+                base_url="https://api.featherless.ai/v1"
+            )
+
+            # Strip data URI prefix if present
             clean_base64 = image_base64.split(",")[-1]
-            image_bytes = base64.b64decode(clean_base64)
 
             prompt = f"""You are the computer vision core of WasteShadow AI, analyzing urban waste in India.
 Location: {location_name}
@@ -46,21 +51,30 @@ Report only factual visual observations in pure JSON:
   "raw_visual_observations": "Visible plastic pile on storm drain."
 }}"""
 
-            response = client.models.generate_content(
-                model="gemini-3.8-flash",
-                contents=[
-                    genai.types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
-                    prompt
+            response = client.chat.completions.create(
+                model=os.getenv("FEATHERLESS_MODEL", "google/gemma-3-27b-it"),
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/jpeg;base64,{clean_base64}"
+                                }
+                            }
+                        ]
+                    }
                 ]
             )
 
-            text = response.text or ""
-            # parse json
+            text = response.choices[0].message.content or ""
             start = text.find("{")
             end = text.rfind("}") + 1
             if start >= 0 and end > start:
                 parsed = json.loads(text[start:end])
-                parsed["model_used"] = "gemini-3.8-flash"
+                parsed["model_used"] = os.getenv("FEATHERLESS_MODEL", "google/gemma-3-27b-it") + " (via Featherless)"
                 parsed["is_demo_fallback"] = False
                 parsed["distinction_disclaimer"] = (
                     "Visual observation identifies visible material characteristics. "
@@ -68,7 +82,7 @@ Report only factual visual observations in pure JSON:
                 )
                 return parsed
         except Exception as e:
-            print(f"Gemini API invocation fallback to demo engine: {e}")
+            print(f"Featherless API invocation failed, falling back to demo engine: {e}")
 
     # Return transparent synthetic demo fallback
     return generate_demo_fallback(location_name, notes, category_hint)

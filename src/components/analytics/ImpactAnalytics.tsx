@@ -335,5 +335,6 @@ export const ImpactAnalytics: React.FC<ImpactAnalyticsProps> = ({
         </div>
       </div>
     </div>
+  </div>
   );
 };

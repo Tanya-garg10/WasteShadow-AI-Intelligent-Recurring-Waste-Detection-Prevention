@@ -75,7 +75,7 @@ export const Footer: React.FC = () => {
               </div>
               <div className="flex items-center gap-1.5">
                 <Database className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Backend: FastAPI Python + Supabase / Postgres</span>
+                <span>Backend: FastAPI Python + Neon PostgreSQL</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />

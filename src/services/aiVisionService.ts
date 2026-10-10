@@ -1,9 +1,8 @@
-import { GoogleGenAI } from '@google/genai';
 import { AIAnalysisResult, WasteCategory, SeverityLevel, DrainBlockageRisk } from '../types';
 
 /**
  * AI Vision Analysis Service
- * Uses Gemini 3.8 Flash Vision when an API key is available,
+ * Uses Featherless API (OpenAI-compatible, vision models) when an API key is available,
  * or gracefully falls back to a transparent, clearly labelled simulated vision engine.
  */
 
@@ -16,14 +15,14 @@ export async function analyzeIncidentPhoto(params: {
 }): Promise<AIAnalysisResult> {
   const { imageBase64, categoryHint, locationName, notes, userApiKey } = params;
 
-  // Check for API key (from runtime env or optional user override)
-  const apiKey = userApiKey || (typeof process !== 'undefined' && process.env?.GEMINI_API_KEY) || (import.meta as any).env?.VITE_GEMINI_API_KEY;
+  // Check for Featherless API key
+  const apiKey = userApiKey || (import.meta as any).env?.VITE_FEATHERLESS_API_KEY;
 
-  if (apiKey && apiKey !== 'MY_GEMINI_API_KEY' && apiKey.length > 10) {
+  if (apiKey && apiKey !== 'YOUR_FEATHERLESS_API_KEY' && apiKey.length > 10) {
     try {
-      return await callGeminiVision(apiKey, imageBase64, locationName, notes, categoryHint);
+      return await callFeatherlessVision(apiKey, imageBase64, locationName, notes, categoryHint);
     } catch (err) {
-      console.warn('Gemini API call failed or encountered rate limit. Falling back to transparent demo engine:', err);
+      console.warn('Featherless API call failed. Falling back to transparent demo engine:', err);
       return generateSimulatedAnalysis(categoryHint, locationName, notes, true);
     }
   }
@@ -32,14 +31,14 @@ export async function analyzeIncidentPhoto(params: {
   return generateSimulatedAnalysis(categoryHint, locationName, notes, false);
 }
 
-async function callGeminiVision(
+async function callFeatherlessVision(
   apiKey: string,
   imageBase64: string,
   locationName: string,
   notes?: string,
   categoryHint?: WasteCategory
 ): Promise<AIAnalysisResult> {
-  const ai = new GoogleGenAI({ apiKey });
+  const model = (import.meta as any).env?.VITE_FEATHERLESS_MODEL || 'google/gemma-3-27b-it';
 
   // Clean base64 string
   const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, '');
@@ -73,29 +72,39 @@ Respond in pure JSON matching this exact structure:
   "rawVisualObservations": "2-3 sentences of objective physical visual description without speculative conclusions"
 }`;
 
-  const response = await ai.models.generateContent({
-    model: 'gemini-3.8-flash',
-    contents: [
-      {
-        role: 'user',
-        parts: [
-          { text: prompt },
-          {
-            inlineData: {
-              data: cleanBase64,
-              mimeType: 'image/jpeg'
+  const response = await fetch('https://api.featherless.ai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: prompt },
+            {
+              type: 'image_url',
+              image_url: { url: `data:image/jpeg;base64,${cleanBase64}` }
             }
-          }
-        ]
-      }
-    ]
+          ]
+        }
+      ]
+    })
   });
 
-  const text = response.text || '';
-  // Extract JSON from response
+  if (!response.ok) {
+    throw new Error(`Featherless API error: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  const text: string = data.choices?.[0]?.message?.content || '';
+
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
-    throw new Error('Could not parse JSON response from Gemini Vision');
+    throw new Error('Could not parse JSON response from Featherless Vision');
   }
 
   const parsed = JSON.parse(jsonMatch[0]);
@@ -104,7 +113,7 @@ Respond in pure JSON matching this exact structure:
     id: `ai_live_${Date.now()}`,
     incidentId: `inc_${Date.now()}`,
     analyzedAt: new Date().toISOString(),
-    modelUsed: 'gemini-3.8-flash (Live Multimodal)',
+    modelUsed: `${model} (via Featherless)`,
     isDemoFallback: false,
     visibleCategories: parsed.visibleCategories || [],
     approxSeverity: parsed.approxSeverity || 'moderate',
