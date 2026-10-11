@@ -67,9 +67,13 @@ export class StorageService {
 
       this.incidents = this.incidents.map((inc) => {
         const canonicalPhoto = seedIncidentMap.get(inc.id);
-        if (canonicalPhoto && (inc.photoUrl !== canonicalPhoto || inc.photoUrl.includes('unsplash.com'))) {
+        if (canonicalPhoto && (inc.photoUrl !== canonicalPhoto || inc.photoUrl.includes('unsplash.com') || inc.photoUrl.includes('/src/assets/images/'))) {
           modified = true;
           return { ...inc, photoUrl: canonicalPhoto };
+        }
+        if (inc.photoUrl?.startsWith('/src/assets/images/')) {
+          modified = true;
+          return { ...inc, photoUrl: inc.photoUrl.replace('/src/assets/images/', '/assets/images/') };
         }
         return inc;
       });
@@ -77,9 +81,13 @@ export class StorageService {
       const seedLocationMap = new Map(INITIAL_LOCATIONS.map((loc) => [loc.id, loc.imageUrl]));
       this.locations = this.locations.map((loc) => {
         const canonicalImage = seedLocationMap.get(loc.id);
-        if (canonicalImage && (loc.imageUrl !== canonicalImage || loc.imageUrl?.includes('unsplash.com'))) {
+        if (canonicalImage && (loc.imageUrl !== canonicalImage || loc.imageUrl?.includes('unsplash.com') || loc.imageUrl?.includes('/src/assets/images/'))) {
           modified = true;
           return { ...loc, imageUrl: canonicalImage };
+        }
+        if (loc.imageUrl?.startsWith('/src/assets/images/')) {
+          modified = true;
+          return { ...loc, imageUrl: loc.imageUrl.replace('/src/assets/images/', '/assets/images/') };
         }
         return loc;
       });

@@ -18,14 +18,20 @@ export const EvidenceImage: React.FC<EvidenceImageProps> = ({
   fallbackText = 'Civic Evidence Photo',
   enableZoom = false
 }) => {
-  const initialSource = src && src.trim() ? src : INCIDENT_VISUALS.sample_preview;
-  const [imgSrc, setImgSrc] = useState<string>(initialSource);
+  const resolveSource = (source?: string) => {
+    if (!source || !source.trim()) return INCIDENT_VISUALS.sample_preview;
+    if (source.startsWith('/src/assets/images/')) {
+      return source.replace('/src/assets/images/', '/assets/images/');
+    }
+    return source;
+  };
+
+  const [imgSrc, setImgSrc] = useState<string>(() => resolveSource(src));
   const [hasError, setHasError] = useState<boolean>(false);
   const [showModal, setShowModal] = useState<boolean>(false);
 
   useEffect(() => {
-    const nextSrc = src && src.trim() ? src : INCIDENT_VISUALS.sample_preview;
-    setImgSrc(nextSrc);
+    setImgSrc(resolveSource(src));
     setHasError(false);
   }, [src]);
 
