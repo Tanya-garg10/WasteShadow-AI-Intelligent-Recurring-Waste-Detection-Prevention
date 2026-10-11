@@ -28,13 +28,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+def root():
+    return {
+        "status": "online",
+        "service": "WasteShadow AI Backend",
+        "docs_url": "/docs",
+        "health_url": "/health",
+        "timestamp": datetime.datetime.utcnow().isoformat()
+    }
+
 @app.get("/health")
 def health_check():
     return {
         "status": "healthy",
         "service": "WasteShadow AI",
         "timestamp": datetime.datetime.utcnow().isoformat(),
-        "gemini_vision_ready": True
+        "featherless_vision_ready": True
     }
 
 # ----------------- AI Vision Analysis Endpoint -----------------
